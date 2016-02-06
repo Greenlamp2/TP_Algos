@@ -1,6 +1,6 @@
 from Place import *
 
-def Liste(object):
+class Liste(object):
     def __init__(self):
         self._head = Place(-1)
         self._head.set_next(self._head)
@@ -15,7 +15,10 @@ def Liste(object):
     def add_item(self, item):
         node = Place(item)
         node.set_next(self._head.get_next())
+        node.set_prev(self._head.get_prev())
         self._head.set_next(node)
+        if(self._head.get_prev() == None):
+            self._head.set_prev(node)
         self.one_more()
 
     def add_after_item(self, what, item):
@@ -52,9 +55,13 @@ def Liste(object):
 
     def __str__(self):
         line = ""
-        current = None
-        while current != self._head:
-            current = self._head
-            data = current.get_data
-            line = line + "(" + str(data[0]) + ", " + str(data[1]) + ")"
+        current = self._head.get_next()
+        data = current.get_data()
+        while data != -1:
+            line = line + "(" + str(data[0]) + " + " + str(data[1]) + "i)"
+            current = current.get_next()
+            data = current.get_data()
         return line
+
+    def fin(self):
+        return self._head.get_prev()
