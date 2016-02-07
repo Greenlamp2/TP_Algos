@@ -7,33 +7,20 @@ def hanoi(n, a, c, b):
 
     if n != 0:
         hanoi(n-1, a, b, c)
-        c.append(a[-1])
-        a.remove(a[-1])
+        c["data"].append(a["data"][-1])
+        a["data"].remove(a["data"][-1])
+        print("Déplacer un disque de " + a["id"] + " à " + c["id"])
         hanoi(n-1, b, c, a)
 
 if __name__ == "__main__":
-    a = []
-    b = []
-    c = []
+    a = {"id": "A", "data": []}
+    b = {"id": "B", "data": []}
+    c = {"id": "C", "data": []}
     n = 3
 
     for i in range(n):
-        a.append(n-i)
+        a["data"].append(n-i)
 
-    print("a:", end="")
-    print(a)
-    print("b:", end="")
-    print(b)
-    print("c:", end="")
-    print(c)
     hanoi(n, a, c, b)
-    print("algo")
-
-    print("a:", end="")
-    print(a)
-    print("b:", end="")
-    print(b)
-    print("c:", end="")
-    print(c)
 
 
