@@ -59,6 +59,7 @@ class SortedList:
         
 
     def previous_at_level(self, value, level=0):
+        """
         current = self.head
         temp = None
         while(current != None and (current.get_value() == "H" or current.get_value() < value)):
@@ -66,6 +67,19 @@ class SortedList:
             current = current.next(level)
 
         return temp
+        """
+
+        current = self.head
+        current_level = self.top_level()
+        while(current_level >= level and current != None and (current.get_value() == "H" or current.get_value() < value)):
+            temp = current
+            next = current.next(current_level)
+            if(next == None or next.get_value() >= value):
+                current_level -= 1
+            else:
+                current = current.next(current_level)
+        return temp
+
         
     def search(self, value):
         current = self.head
