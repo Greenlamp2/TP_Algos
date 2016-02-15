@@ -60,40 +60,62 @@ class SortedList:
 
     def previous_at_level(self, value, level=0):
         """
-        current = self.head
-        temp = None
-        while(current != None and (current.get_value() == "H" or current.get_value() < value)):
-            temp = current
-            current = current.next(level)
-
-        return temp
+        Retourne le noeud de la skip list dont la valeur est juste avant à la valeur demandée
         """
-
+        #On positionne d'abord notre curseur en tête de liste
         current = self.head
+        #On récupère la hauteur de la liste
         current_level = self.top_level()
+        #On boucle tant que:
+        # - On a pas dépassé le niveau demandé
+        # - On a pas atteint le bout de liste
+        # - La valeur vaut H
+        # - La valeur est plus grande que celle demandée
+        # Donc on boucle tant qu'on a pas trouvé le premier element plus grand que celle demandée
+        # et lorsqu'on a trouvé cette valeur, on descend d'un niveau et on continue.
         while(current_level >= level and current != None and (current.get_value() == "H" or current.get_value() < value)):
             temp = current
             next = current.next(current_level)
+            #Donc si on est en bout de liste à ce niveau là ou si la valeur est plus grande que celle demandée
             if(next == None or next.get_value() >= value):
+                #On descend d'un niveau
                 current_level -= 1
             else:
+                #Sinon on récupère la valeur suivante au même niveau
                 current = current.next(current_level)
         return temp
 
         
     def search(self, value):
+        """
+        Retourne le noeud de la skip list dont la valeur est la valeur recherchée
+        """
+        #On positionne d'abord notre curseur en tête de liste
         current = self.head
+        #On récupère la hauteur de la liste
         current_level = self.top_level()
+        #On initialise notre boolean servant à signifier qu'on a trouver notre valeur, à faux.
         found = False
 
+        #On boucle tant que:
+        # - On a pas trouvé notre valeur
+        # - On a pas parcouru tous les niveaux de la liste
+        # - On a pas atteint la fin de la liste
+        # Donc on boucle tant qu'on a pas parcouru tous les niveaux et qu'on a pas trouvé notre élement.
         while(not found and current_level >= 0 and current != None):
+            #Si la valeur actuelle est celle qu'on recherche
             if(current.get_value() == value):
+                #On met la boolean à vrai
                 found = True
             else:
+                #Sinon on récupère l'element suivant sur le même niveau
                 next = current.next(current_level)
+                #Si l'element suivant n'existe pas ou si la valeur suivante est plus grande
                 if(next == None or next.get_value() > value):
+                    #On descend d'un niveau
                     current_level -= 1
                 else:
+                    #Sinon on récupère l'element suivant sur le même niveau
                     current = current.next(current_level)
         return current
         
