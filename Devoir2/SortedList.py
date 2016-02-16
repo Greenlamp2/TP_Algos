@@ -29,7 +29,7 @@ class SortedList(object):
         if(current == None):
             return
         else:
-            while(not found and current != None):
+            while(not found and current != None and current.get_value() <= value):
                 if(current.get_value() == value):
                     found = True
                     previous.set_next(current.get_next())
