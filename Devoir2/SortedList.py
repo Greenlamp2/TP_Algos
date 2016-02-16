@@ -3,39 +3,25 @@ class SortedList(object):
         self.head = Node("H", None)
 
     def insert(self, value):
-        found = False
         current = self.head.get_next()
         previous = self.head
         new_node = Node(value, None)
-        if(current == None):
-            self.head.set_next(new_node)
-        else:
-            while(not found and current != None):
-                if(current.get_value() >= value):
-                    previous.set_next(new_node)
-                    new_node.set_next(current)
-                    found = True
-                else:
-                    previous = current
-                    current = current.get_next()
-            if(not found):
-                previous.set_next(new_node)
+        while(current != None and current.get_value() < value):
+                previous = current
+                current = current.get_next()
+        previous.set_next(new_node)
+        new_node.set_next(current)
 
 
     def remove(self, value):
-        found = False
         current = self.head.get_next()
         previous = self.head
-        if(current == None):
-            return
-        else:
-            while(not found and current != None and current.get_value() <= value):
-                if(current.get_value() == value):
-                    found = True
-                    previous.set_next(current.get_next())
-                else:
-                    previous = current
-                    current = current.get_next()
+        while(current != None and current.get_value() < value):
+            previous = current
+            current = current.get_next()
+        if(current != None and current.get_value() == value):
+            previous.set_next(current.get_next())
+
 
     def search(self, value):
         found = False
