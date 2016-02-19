@@ -1,11 +1,17 @@
-def inverse(numbers, size):
+def inverse(size):
+    number = None
     if(size > 0):
-        inverse(numbers, size-1)
-    print(numbers[len(numbers) - size-1], end=" ")
+        print("enter a number:")
+        number = input()
+        inverse(size-1)
+        print(number)
 
 
 if __name__ == "__main__":
-    numbers = [2, 8, 5, 9, 13, 11, 46, 51]
-    print(numbers)
 
-    inverse(numbers, len(numbers)-1)
+    print("How many numbers ?")
+    number = input()
+    try:
+        inverse(int(number))
+    except:
+        print("bad number")
