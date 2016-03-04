@@ -1,0 +1,18 @@
+8 : 8h00, carrefour
+7 : 8h01, depot du client 3, chargement fini a 8h06
+4 : 8h10, depot du client 0
+11 : 8h11, carrefour
+3 : 8h13, client 3, dechargement fini a 8h18
+11 : 8h20, carrefour
+4 : 8h21, depot du client 0, chargement fini a 8h26
+0 : 8h27, client 0, dechargement fini a 8h32
+9 : 8h33, carrefour
+5 : 8h35, depot du client 1, chargement fini a 8h40
+8 : 8h41, carrefour
+7 : 8h42, depot du client 3
+6 : 8h43, depot du client 2, chargement fini a 8h48
+10 : 8h49, carrefour
+2 : 8h52, client 2, dechargement fini a 8h57
+1 : 9h03, client 1, dechargement fini a 9h08
+Temps total : 68
+Nombre d'itérations : 52967
