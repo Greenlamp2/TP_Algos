@@ -130,11 +130,13 @@ class Planing(object):
             return False
         depot_target = self.get_depot_for_client(dest_to)
         last_depot_visited = None
+        visited = []
         for elm in self._temp_parcours:
             if self.is_depot(elm):
-                C'est ici que je dois rajouter de ne pas compter le dernier dépot visiter si c'est la seconde fois qu'on le visite.'
-                if not self.depot_already_delivered(elm, self._temp_parcours):
-                    last_depot_visited = elm
+                if not elm in visited:
+                    if not self.depot_already_delivered(elm, self._temp_parcours):
+                        last_depot_visited = elm
+                visited.append(elm)
         if last_depot_visited == depot_target:
             return True
         else:
@@ -219,8 +221,9 @@ class Planing(object):
         return False
 
     def solve(self, position):
-        if self._temp_parcours == [6, 8, 5, 4, 5]:
+        if self._temp_parcours == [6, 8, 5, 4, 5, 1, 3]:
             print("")
+            Il faut mtn faire si le camion charge, et si le camion charge pas.
         self._count += 1
         if(len(self._temp_parcours) == 0):
             self._temp_parcours.append(position)
