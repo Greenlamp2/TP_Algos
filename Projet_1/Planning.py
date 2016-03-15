@@ -16,9 +16,8 @@ class Planing(object):
         self._done = False
         self.read_file()
         self.solve(self.get_depart())
-        print(self._parcours)
+        self.printRes()
         print(self._totalTime)
-        print(self._count)
 
     def read_file(self):
         temp_data = []
@@ -116,11 +115,12 @@ class Planing(object):
     def can_go(self, parcours, total_time, dest_from, dest_to):
         if self.already_pass(parcours, dest_to, 2):
             return False
-        if self.time_expired(total_time, dest_to, self.get_time_between(dest_from, dest_to)):
-            return False
         if self.is_client(dest_to):
             if self.can_go_to_client(dest_from, dest_to):
-                return True
+                if self.time_expired(total_time, dest_from, dest_to, self.get_time_between(dest_from, dest_to)):
+                    return True
+                else:
+                    return False
             else:
                 return False
         return True
@@ -132,7 +132,8 @@ class Planing(object):
         last_depot_visited = None
         for elm in self._temp_parcours:
             if self.is_depot(elm):
-                if not self.depot_already_delivered(elm):
+                C'est ici que je dois rajouter de ne pas compter le dernier dépot visiter si c'est la seconde fois qu'on le visite.'
+                if not self.depot_already_delivered(elm, self._temp_parcours):
                     last_depot_visited = elm
         if last_depot_visited == depot_target:
             return True
@@ -146,9 +147,9 @@ class Planing(object):
 
         return temp
 
-    def depot_already_delivered(self, depot):
+    def depot_already_delivered(self, depot, parcours):
         client = depot - self._n
-        if client in self._temp_parcours:
+        if client in parcours:
             return True
         return False
 
@@ -161,37 +162,101 @@ class Planing(object):
         else:
             return None
 
-    def time_expired(self, total_time, position, time_to_add):
-        time_expected = self.get_time_expected(position)
-        if time_expected == None:
-            return False
-        return time_expected < total_time + time_to_add
+    def time_expired(self, total_time, dest_from, dest_to, time_to_add):
+        if self.is_client(dest_to):
+            if not self.client_already_delivered(dest_to, self._temp_parcours):
+                time_to_add += 5
+            time_expected = self.get_time_expected(dest_to)
+            if time_expected == None:
+                return False
+            return time_expected >= total_time + time_to_add
+        return False
+
+    def client_already_delivered(self, position, parcours):
+        if position in parcours:
+            return True
 
     def printRes(self):
-        pass
+        time_total = 0
+        prev = None
+        depot = None
+        temp_parcours = []
+        for elm in self._parcours:
+            if prev != None:
+                time = self.get_time_between(prev, elm)
+                time_total += time
+                if self.is_depot(elm):
+                    if not self.depot_already_loaded(elm, temp_parcours):
+                        print("{} : {}, depot du client {}, chargement fini a {}".format(elm, self.calculate_hour(time_total), self.get_client_for(elm), self.calculate_hour(time_total+5)))
+                        time_total += 5
+                    else:
+                        print("{} : {}, depot du client {}".format(elm, self.calculate_hour(time_total), self.get_client_for(elm)))
+                elif self.is_client(elm):
+                    print("{} : {}, client {}, dechargement fini a {}".format(elm, self.calculate_hour(time_total), elm, self.calculate_hour(time_total+5)))
+                    time_total += 5
+                else:
+                    print("{} : {}, carrefour".format(elm, self.calculate_hour(time_total)))
+            else:
+                print("{} : {}, carrefour".format(elm, self.calculate_hour(time_total)))
+            print("total_time: {}".format(time_total))
+            prev = elm
+            temp_parcours.append(elm)
+        print("Temps total : {}".format(time_total))
+        print("Nombre d'itérations : {}".format(self._count))
+
+    def depot_already_loaded(self, position, parcours):
+        if position in parcours:
+            return True
+    def smt_to_transfert(self, position):
+        if self.is_client(position):
+            if not self.client_already_delivered(position, self._temp_parcours):
+                return True
+        elif self.is_depot(position):
+            if not self.depot_already_delivered(position, self._temp_parcours):
+                return True
+            elif not self.depot_already_loaded(position, self._temp_parcours):
+                return True
+        return False
 
     def solve(self, position):
+        if self._temp_parcours == [6, 8, 5, 4, 5]:
+            print("")
         self._count += 1
-        if(self.is_client(position) or self.is_depot(position)):
-            self._temp_totalTime = self.add_transfert_time(self._temp_totalTime)
         if(len(self._temp_parcours) == 0):
             self._temp_parcours.append(position)
         if self.is_all_delivered(self._temp_parcours):
-            if self._temp_totalTime == 56:
-                    print("coucou")
             self.compare_results(self._temp_totalTime, self._temp_parcours)
             return True
         possibles = []
         for i in range(self._m):
             time = self.get_time_between(position, i)
-            if(time != None and self.can_go(self._temp_parcours, 0, position, i)):
+            if(time != None and self.can_go(self._temp_parcours, self._temp_totalTime, position, i)):
                 possibles.append(i)
         for possible in possibles:
             self._temp_parcours.append(possible)
-            self._temp_totalTime = self.add_time(self._temp_totalTime, position, possible)
+            self._temp_totalTime = self.calculate_time_total(self._temp_parcours)
             self.solve(possible)
-            last_elm = self._temp_parcours[-1]
-            time = self.get_time_between(position, last_elm)
             del self._temp_parcours[-1]
-            self._temp_totalTime -= time
+            self._temp_totalTime = self.calculate_time_total(self._temp_parcours)
         return False
+
+    def calculate_time_total(self, parcours):
+        time_total = 0
+        prev = None
+        depot = None
+        temp_parcours = []
+        for elm in parcours:
+            if prev != None:
+                time = self.get_time_between(prev, elm)
+                time_total += time
+                if self.is_depot(elm):
+                    if not self.depot_already_loaded(elm, temp_parcours):
+                        time_total += 5
+                elif self.is_client(elm):
+                    time_total += 5
+            prev = elm
+            temp_parcours.append(elm)
+        return time_total
+
+
+
