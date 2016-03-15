@@ -17,6 +17,8 @@ class Planing(object):
         self.read_file()
         self.solve(self.get_depart())
         print(self._parcours)
+        print(self._totalTime)
+        print(self._count)
 
     def read_file(self):
         temp_data = []
@@ -74,39 +76,10 @@ class Planing(object):
 
     def save_solution(self, total_time, parcours):
         self._totalTime = total_time
-        self._parcours = parcours
+        self._parcours = self.copy_array(parcours)
 
     def possible(self, i, j):
         return (i >= 0 and i <= self._m and j >= 0 and j <= self._m)
-
-    def solve(self, position):
-        self._done = False
-        self._temp_count += 1
-
-        total_time = 0
-        parcours = []
-
-
-
-        #Fin de la condition d'arret
-
-        parcours.append(position)
-        if self.is_depot(position) or self.is_client(position):
-            total_time = self.add_transfert_time(total_time)
-        for i in range(self._m):
-            time = self.get_time_between(position, i)
-            if(time != None and self.can_go(position, i)):
-                total_time = self.add_time(total_time, position, i)
-                parcours.append(i)
-                a, b = self.solve(i)
-                parcours.append(a)
-                total_time += b
-        #Condition d'arret de la fonction recursive avec un return True
-        if self.is_all_delivered(parcours):
-            #Checker les temps
-            self.compare_results(total_time, parcours)
-
-        return parcours, total_time
 
     def compare_results(self, total_time, parcours):
         if(self._totalTime == 0 or total_time < self._totalTime):
@@ -114,6 +87,9 @@ class Planing(object):
 
     def is_all_delivered(self, parcours):
         temp = True
+        for i in range(self._n):
+            if i+self._n not in parcours:
+                temp = False
         for i in range(self._n):
             if i not in parcours:
                 temp = False
@@ -137,17 +113,47 @@ class Planing(object):
     def is_depot(self, position):
         return position in [self._n + i for i in range(self._n)]
 
-    def can_go(self, parcours, dest_from, dest_to):
-        if self.already_pass(parcours, dest_to, 1):
+    def can_go(self, parcours, total_time, dest_from, dest_to):
+        if self.already_pass(parcours, dest_to, 2):
             return False
-        if self.time_expired(dest_to, self.get_time_between(dest_from, dest_to)):
+        if self.time_expired(total_time, dest_to, self.get_time_between(dest_from, dest_to)):
             return False
-        if self.is_depot(dest_from):
-            if self.is_client(dest_to):
-                if self._temp_parcours[-1] == dest_from:
-                    return True
-
+        if self.is_client(dest_to):
+            if self.can_go_to_client(dest_from, dest_to):
+                return True
+            else:
+                return False
         return True
+
+    def can_go_to_client(self, dest_from, dest_to):
+        if(len(self._temp_parcours) == 0):
+            return False
+        depot_target = self.get_depot_for_client(dest_to)
+        last_depot_visited = None
+        for elm in self._temp_parcours:
+            if self.is_depot(elm):
+                if not self.depot_already_delivered(elm):
+                    last_depot_visited = elm
+        if last_depot_visited == depot_target:
+            return True
+        else:
+            return False
+
+    def copy_array(self, array_from):
+        temp = []
+        for elm in array_from:
+            temp.append(elm)
+
+        return temp
+
+    def depot_already_delivered(self, depot):
+        client = depot - self._n
+        if client in self._temp_parcours:
+            return True
+        return False
+
+    def get_depot_for_client(self, client):
+        return self._n + client
 
     def get_time_expected(self, position):
         if position in [i for i in range(self._n)]:
@@ -155,11 +161,37 @@ class Planing(object):
         else:
             return None
 
-    def time_expired(self, position, time_to_add):
+    def time_expired(self, total_time, position, time_to_add):
         time_expected = self.get_time_expected(position)
         if time_expected == None:
             return False
-        return time_expected < self._temp_totalTime+ time_to_add
+        return time_expected < total_time + time_to_add
 
     def printRes(self):
         pass
+
+    def solve(self, position):
+        self._count += 1
+        if(self.is_client(position) or self.is_depot(position)):
+            self._temp_totalTime = self.add_transfert_time(self._temp_totalTime)
+        if(len(self._temp_parcours) == 0):
+            self._temp_parcours.append(position)
+        if self.is_all_delivered(self._temp_parcours):
+            if self._temp_totalTime == 56:
+                    print("coucou")
+            self.compare_results(self._temp_totalTime, self._temp_parcours)
+            return True
+        possibles = []
+        for i in range(self._m):
+            time = self.get_time_between(position, i)
+            if(time != None and self.can_go(self._temp_parcours, 0, position, i)):
+                possibles.append(i)
+        for possible in possibles:
+            self._temp_parcours.append(possible)
+            self._temp_totalTime = self.add_time(self._temp_totalTime, position, possible)
+            self.solve(possible)
+            last_elm = self._temp_parcours[-1]
+            time = self.get_time_between(position, last_elm)
+            del self._temp_parcours[-1]
+            self._temp_totalTime -= time
+        return False
