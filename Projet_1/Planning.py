@@ -42,14 +42,14 @@ class Planing(object):
         self.handle_data(temp_data)
 
     def handle_data(self, temp_data):
-        self.n = int(temp_data[0])
-        self.m = int(temp_data[1])
+        self.n = int(str(temp_data[0]))
+        self.m = int(str(temp_data[1]))
         for del_time in temp_data[2].split(" "):
-            self.deliveryTime.append(int(del_time))
+            self.deliveryTime.append(int(str(del_time)))
         for i in range(self.m):
             temp_time = []
             for time in temp_data[3+i].split(" "):
-                temp_time.append(int(time))
+                temp_time.append(int(str(time)))
             self.time.append(temp_time)
 
     def get_time_between(self, i, j):
