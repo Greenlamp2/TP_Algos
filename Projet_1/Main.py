@@ -1,11 +1,11 @@
 # coding: utf8
-from Planning import *
+from projet1 import *
 
 if __name__ == "__main__":
 
-    Planing("data.txt")
-    Planing("data2.txt")
-    Planing("data3.txt")
-    Planing("data4.txt")
-    Planing("data5.txt")
-    Planing("data6.txt")
+    Planning("data.txt")
+    Planning("data2.txt")
+    Planning("data3.txt")
+    Planning("data4.txt")
+    Planning("data5.txt")
+    Planning("data6.txt")

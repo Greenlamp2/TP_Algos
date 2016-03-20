@@ -1,7 +1,7 @@
 # coding: utf8
 import itertools
 
-class Planing(object):
+class Planning(object):
     def __init__(self, nameFile):
         self.n = None
         self.m = None
