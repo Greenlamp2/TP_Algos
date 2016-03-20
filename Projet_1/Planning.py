@@ -2,28 +2,31 @@ import itertools
 
 class Planing(object):
     def __init__(self, nameFile):
-        self._n = None
-        self._m = None
-        self._deliveryTime = []
-        self._time = []
-        self._totalTime = 0
+        self.n = None
+        self.m = None
+        self.deliveryTime = []
+        self.time = []
+        self.totalTime = 0
+        self.parcours = []
+        self.count = 0
+        self.actions = []
+
         self._temp_totalTime = 0
-        self._parcours = []
         self._temp_parcours = []
-        self._actions = []
         self._temp_actions = []
-        self._count = 0
         self._temp_count = 0
+
         self._load_possibilities = []
+
         self._depot_loaded = {}
-        self._strategy_current = None
+
         self._name = nameFile
         self._success = False
+
         self.read_file()
         self.generate_load_or_not()
         self.solve(self.get_depart())
         self.printRes()
-        print("strategy: {}".format(self._strategy_current))
 
     def read_file(self):
         temp_data = []
@@ -36,32 +39,32 @@ class Planing(object):
         self.handle_data(temp_data)
 
     def handle_data(self, temp_data):
-        self._n = int(temp_data[0])
-        self._m = int(temp_data[1])
+        self.n = int(temp_data[0])
+        self.m = int(temp_data[1])
         for del_time in temp_data[2].split(" "):
-            self._deliveryTime.append(int(del_time))
-        for i in range(self._m):
+            self.deliveryTime.append(int(del_time))
+        for i in range(self.m):
             temp_time = []
             for time in temp_data[3+i].split(" "):
                 temp_time.append(int(time))
-            self._time.append(temp_time)
+            self.time.append(temp_time)
 
     def get_time_between(self, i, j):
-        time = self._time[i][j]
+        time = self.time[i][j]
         if time == -1:
             return None
         else:
             return time
 
     def get_depot_for(self, client):
-        if client + self._n <= self._m:
-            return client + self._n
+        if client + self.n <= self.m:
+            return client + self.n
         else:
             return None
 
     def get_client_for(self, depot):
-        if depot - self._n >= 0:
-            return depot - self._n
+        if depot - self.n >= 0:
+            return depot - self.n
         else:
             return None
 
@@ -73,30 +76,26 @@ class Planing(object):
         return str(int(8 + (min/60))) + ":" + str(left)
 
     def get_depart(self):
-        return 2 * self._n
+        return 2 * self.n
 
     def add_transfert_time(self):
         self._temp_totalTime += 5
 
     def save_solution(self, total_time, parcours):
-        self._totalTime = total_time
-        self._parcours = self.copy_array(parcours)
-        self._actions = self.copy_array(self._temp_actions)
+        self.totalTime = total_time
+        self.parcours = self.copy_array(parcours)
+        self.actions = self.copy_array(self._temp_actions)
 
     def possible(self, i, j):
-        return (i >= 0 and i <= self._m and j >= 0 and j <= self._m)
+        return (i >= 0 and i <= self.m and j >= 0 and j <= self.m)
 
     def compare_results(self, total_time, parcours, strategy):
-        if(self._totalTime == 0 or total_time < self._totalTime):
+        if(self.totalTime == 0 or total_time < self.totalTime):
             self.save_solution(total_time, parcours)
-            self._strategy_current = strategy
 
     def is_all_delivered(self, parcours):
         temp = True
-        for i in range(self._n):
-            if i+self._n not in parcours:
-                temp = False
-        for i in range(self._n):
+        for i in range(self.n):
             if i not in parcours:
                 temp = False
         return temp
@@ -114,10 +113,10 @@ class Planing(object):
         return cpt >= num
 
     def is_client(self, position):
-        return position in [i for i in range(self._n)]
+        return position in [i for i in range(self.n)]
 
     def is_depot(self, position):
-        return position in [self._n + i for i in range(self._n)]
+        return position in [self.n + i for i in range(self.n)]
 
     def can_go(self, parcours, total_time, dest_from, dest_to):
         if self.already_pass(parcours, dest_to, 2):
@@ -138,19 +137,7 @@ class Planing(object):
         if self.client_already_delivered(self.get_depot_for(dest_to), self._temp_parcours):
             return True
         depot_target = self.get_depot_for(dest_to)
-        """
-        last_depot_visited = None
-        visited = []
-        for elm in self._temp_parcours:
-            if self.is_depot(elm):
-                last_loaded = self.get_last_loaded()
-                if not self.depot_already_delivered(elm, self._temp_parcours) and self.is_loaded(elm):
-                    last_depot_visited = elm
-        """
-        if self.get_last_loaded() == depot_target:
-            return True
-        else:
-            return False
+        return self.get_last_loaded() == depot_target
 
     def get_last_loaded(self):
         max = None
@@ -170,10 +157,7 @@ class Planing(object):
             value = self._depot_loaded[position]
         except:
             pass
-        if value != None: #Si il est dans la liste, c'est qu'il a été loadé
-            return True
-        else:
-            return False
+        return value != None #Si il est dans la liste, c'est qu'il a été loadé
 
     def copy_array(self, array_from):
         temp = []
@@ -194,14 +178,14 @@ class Planing(object):
             return value[2]
 
     def get_time_expected(self, position):
-        if position in [i for i in range(self._n)]:
-            return self._deliveryTime[position]
+        if position in [i for i in range(self.n)]:
+            return self.deliveryTime[position]
         else:
             return None
 
     def time_expired(self, total_time, dest_from, dest_to, time_to_add):
         if self.is_client(dest_to):
-            if not self.client_already_delivered(dest_to, self._temp_parcours):
+            if not self.client_already_delivered(self.get_depot_for(dest_to), self._temp_parcours):
                 time_to_add += 5
             time_expected = self.get_time_expected(dest_to)
             if time_expected == None:
@@ -221,13 +205,13 @@ class Planing(object):
             return value[2]
 
     def printRes(self):
-        if self._totalTime == 0:
+        if self.totalTime == 0:
             print("Trajet impossible dans le temps imparti")
         else:
-            for line in self._actions:
+            for line in self.actions:
                 print(line)
-            print("Temps total : {}".format(self._totalTime))
-            print("Nombre d'itérations : {}".format(self._count))
+            print("Temps total : {}".format(self.totalTime))
+            print("Nombre d'itérations : {}".format(self.count))
 
     def add_action(self, parcours, dest_from, position, to_load = False):
         action = ""
@@ -274,7 +258,7 @@ class Planing(object):
 
 
     def solve(self, position, strategy=None):
-        self._count +=1
+        self.count +=1
         #Si premiere itération, on ajoute la position dans le parcours
         if(len(self._temp_parcours) == 0):
             self._temp_parcours.append(position)
@@ -283,9 +267,7 @@ class Planing(object):
             for strategy in self._load_possibilities:
                     if self.solve(position, strategy):
                         self._success = True
-            """
-            strategy = [0, 1, 1]
-            """
+
         #Si tous les clients ont été livré, on compare les résultats
         if self.is_all_delivered(self._temp_parcours):
             self.compare_results(self._temp_totalTime, self._temp_parcours, strategy)
@@ -294,7 +276,7 @@ class Planing(object):
 
         #On détermine les chemins possible
         possibles = []
-        for i in range(self._m):
+        for i in range(self.m):
             time = self.get_time_between(position, i)
             if(time != None and self.can_go(self._temp_parcours, self._temp_totalTime, position, i)):
                 possibles.append(i)
@@ -316,15 +298,6 @@ class Planing(object):
 
         return self._success
 
-    def get_indice(self, strategy):
-        cpt = 0
-        for strat in self._load_possibilities:
-            if strat == strategy:
-                return cpt
-            cpt += 1
-
-        return cpt
-
     def enough_time_remaining(self):
         clients = self.clients_remaining()
         depots = self.depots_remaining()
@@ -335,21 +308,18 @@ class Planing(object):
 
         flag = False
         cpt = 0
-        for delivery in self._deliveryTime:
-            if not self.client_already_delivered((cpt + self._n), self._temp_parcours):
+        for delivery in self.deliveryTime:
+            if not self.client_already_delivered((cpt + self.n), self._temp_parcours):
                 if delivery >= self._temp_totalTime + time:
                     flag = True
             cpt += 1
-
-        if flag == False:
-            pass
 
         return flag
 
     def clients_remaining(self):
         cpt = 0
-        cpt += self._n - len(self._depot_loaded)
-        if cpt != self._n:
+        cpt += self.n - len(self._depot_loaded)
+        if cpt != self.n:
             for key in self._depot_loaded.keys():
                 if self._depot_loaded[key][2] == False:
                     cpt += 1
@@ -357,7 +327,7 @@ class Planing(object):
         return cpt
 
     def depots_remaining(self):
-        return self._n - len(self._depot_loaded)
+        return self.n - len(self._depot_loaded)
 
 
     def remove_last_position(self):
@@ -397,29 +367,23 @@ class Planing(object):
         else:
             self.remove_time(time)
 
-
-
-
         del self._temp_parcours[-1]
-        #self.remove_time(time)
         self.remove_last_action()
 
     def remove_time(self, time):
         self._temp_totalTime -= time
 
     def generate_load_or_not(self):
-        temp = [list(i) for i in itertools.product([0, 1], repeat=self._n)]
+        temp = [list(i) for i in itertools.product([0, 1], repeat=self.n)]
         for elm in temp:
             count = elm.count(0)
             if count <= 1:
                 self._load_possibilities.append(elm)
 
-        pass
-
 
     def should_load(self, parcours, position, strategy):
         if self.is_depot(position):
-            indice = position - self._n
+            indice = position - self.n
             if strategy[indice] == 0:
                 #Si on ne charge pas au premier passage
                 return self.already_pass(parcours, position, 2)
@@ -427,8 +391,3 @@ class Planing(object):
                 return not self.already_pass(parcours, position, 2)
         else:
             return False
-
-
-
-
-
