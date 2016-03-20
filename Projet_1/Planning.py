@@ -291,9 +291,6 @@ class Planing(object):
             self.compare_results(self._temp_totalTime, self._temp_parcours, strategy)
             return True
 
-        if not self.enough_time_remaining():
-            return False
-
 
         #On détermine les chemins possible
         possibles = []
@@ -311,9 +308,9 @@ class Planing(object):
             if should_load:
                 #On ajoute le numero du dépot et son totalTime associé avant chargement et avant meme d'avoir été dessus
                 self._depot_loaded[possible] = [time, self._temp_totalTime, False]
-
-            if self.solve(possible, strategy):
-                self._success = True
+            if self.enough_time_remaining() :
+                if self.solve(possible, strategy):
+                    self._success = True
             self.remove_last_position()
 
 
@@ -332,6 +329,8 @@ class Planing(object):
         clients = self.clients_remaining()
         depots = self.depots_remaining()
         total = clients + depots
+        if total == 0:
+            return True
         time = (total * 5) + total - 1
 
         flag = False
