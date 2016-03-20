@@ -247,8 +247,6 @@ class Planing(object):
 
         elif self.is_client(position):
             depot = self.get_depot_for(position)
-            if self._temp_parcours == [6, 8, 4, 5, 2, 3, 1, 3, 0]:
-                pass
             if self.client_already_delivered(depot, self._temp_parcours):
                 #Si client déja livré, on passe dessus sans déchargement
                 self.add_time(dest_from, position)
@@ -307,8 +305,6 @@ class Planing(object):
         #Tous les chemins possible sont déterminé, on les teste)
         for possible in possibles:
             self._temp_parcours.append(possible)
-            if self._temp_parcours == [6, 8, 5, 8, 2, 3, 0]:
-                pass
             should_load = self.should_load(self._temp_parcours, possible, strategy)
             time = self._temp_totalTime
             self.add_action(self._temp_parcours, position, possible, should_load)
@@ -336,7 +332,7 @@ class Planing(object):
         clients = self.clients_remaining()
         depots = self.depots_remaining()
         total = clients + depots
-        time = (total * 5)
+        time = (total * 5) + total - 1
 
         flag = False
         cpt = 0
