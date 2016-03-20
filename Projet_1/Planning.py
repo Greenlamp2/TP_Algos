@@ -293,8 +293,9 @@ class Planing(object):
             self.compare_results(self._temp_totalTime, self._temp_parcours, strategy)
             return True
 
-        if self._temp_parcours == [6, 8, 5, 4, 5]:
-            pass
+        if not self.enough_time_remaining():
+            return False
+
 
         #On détermine les chemins possible
         possibles = []
@@ -306,6 +307,8 @@ class Planing(object):
         #Tous les chemins possible sont déterminé, on les teste)
         for possible in possibles:
             self._temp_parcours.append(possible)
+            if self._temp_parcours == [6, 8, 5, 8, 2, 3, 0]:
+                pass
             should_load = self.should_load(self._temp_parcours, possible, strategy)
             time = self._temp_totalTime
             self.add_action(self._temp_parcours, position, possible, should_load)
@@ -330,7 +333,36 @@ class Planing(object):
         return cpt
 
     def enough_time_remaining(self):
-        return True
+        clients = self.clients_remaining()
+        depots = self.depots_remaining()
+        total = clients + depots
+        time = (total * 5)
+
+        flag = False
+        cpt = 0
+        for delivery in self._deliveryTime:
+            if not self.client_already_delivered((cpt + self._n), self._temp_parcours):
+                if delivery >= self._temp_totalTime + time:
+                    flag = True
+            cpt += 1
+
+        if flag == False:
+            pass
+
+        return flag
+
+    def clients_remaining(self):
+        cpt = 0
+        cpt += self._n - len(self._depot_loaded)
+        if cpt != self._n:
+            for key in self._depot_loaded.keys():
+                if self._depot_loaded[key][2] == False:
+                    cpt += 1
+
+        return cpt
+
+    def depots_remaining(self):
+        return self._n - len(self._depot_loaded)
 
 
     def remove_last_position(self):
@@ -381,7 +413,14 @@ class Planing(object):
         self._temp_totalTime -= time
 
     def generate_load_or_not(self):
-        self._load_possibilities = [list(i) for i in itertools.product([0, 1], repeat=self._n)]
+        temp = [list(i) for i in itertools.product([0, 1], repeat=self._n)]
+        for elm in temp:
+            count = elm.count(0)
+            if count <= 1:
+                self._load_possibilities.append(elm)
+
+        pass
+
 
     def should_load(self, parcours, position, strategy):
         if self.is_depot(position):
