@@ -42,8 +42,8 @@ class Planing(object):
         self.handle_data(temp_data)
 
     def handle_data(self, temp_data):
-        print("temp_data[0]= " + temp_data[0])
-        print("temp_data[1]= " + temp_data[1])
+        print("temp_data:")
+        print(temp_data)
         self.n = int(temp_data[0])
         self.m = int(temp_data[1])
         for del_time in temp_data[2].split(" "):
