@@ -26,10 +26,10 @@ class Planing(object):
         self._name = nameFile
         self._success = False
 
-        self.read_file()
-        self.generate_load_or_not()
-        self.solve(self.get_depart())
-        self.printRes()
+        if self.read_file():
+            self.generate_load_or_not()
+            self.solve(self.get_depart())
+            self.printRes()
 
     def read_file(self):
         temp_data = []
@@ -39,20 +39,23 @@ class Planing(object):
         f.closed
         for data in read_data.split("\n"):
             temp_data.append(data)
-        self.handle_data(temp_data)
+        return self.handle_data(temp_data)
 
     def handle_data(self, temp_data):
-        print("temp_data:")
-        print(temp_data)
-        self.n = int(temp_data[0])
-        self.m = int(temp_data[1])
-        for del_time in temp_data[2].split(" "):
-            self.deliveryTime.append(int(del_time))
-        for i in range(self.m):
-            temp_time = []
-            for time in temp_data[3+i].split(" "):
-                temp_time.append(int(time))
-            self.time.append(temp_time)
+        try:
+            self.n = int(temp_data[0])
+            self.m = int(temp_data[1])
+            for del_time in temp_data[2].split(" "):
+                self.deliveryTime.append(int(del_time))
+            for i in range(self.m):
+                temp_time = []
+                for time in temp_data[3+i].split(" "):
+                    temp_time.append(int(time))
+                self.time.append(temp_time)
+            return True
+        except:
+            print("Erreur dans votre fichier data, veuillez le vérifier")
+            return False
 
     def get_time_between(self, i, j):
         time = self.time[i][j]
