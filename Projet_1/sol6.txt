@@ -15,4 +15,4 @@
 2 : 8h52, client 2, dechargement fini a 8h57
 1 : 9h03, client 1, dechargement fini a 9h08
 Temps total : 68
-Nombre d'itérations : 52967
+Nombre d'itérations : 277338

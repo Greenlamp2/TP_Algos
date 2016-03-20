@@ -1,3 +1,4 @@
+# coding: utf8
 import itertools
 
 class Planing(object):
@@ -10,6 +11,8 @@ class Planing(object):
         self.parcours = []
         self.count = 0
         self.actions = []
+
+        self._limit = 1000000
 
         self._temp_totalTime = 0
         self._temp_parcours = []
@@ -150,7 +153,6 @@ class Planing(object):
 
         return depot
 
-
     def is_loaded(self, position):
         value = None
         try:
@@ -256,7 +258,6 @@ class Planing(object):
     def remove_last_action(self):
         del self._temp_actions[-1]
 
-
     def solve(self, position, strategy=None):
         self.count +=1
         #Si premiere itération, on ajoute la position dans le parcours
@@ -272,7 +273,6 @@ class Planing(object):
         if self.is_all_delivered(self._temp_parcours):
             self.compare_results(self._temp_totalTime, self._temp_parcours, strategy)
             return True
-
 
         #On détermine les chemins possible
         possibles = []
@@ -290,13 +290,22 @@ class Planing(object):
             if should_load:
                 #On ajoute le numero du dépot et son totalTime associé avant chargement et avant meme d'avoir été dessus
                 self._depot_loaded[possible] = [time, self._temp_totalTime, False]
-            if self.enough_time_remaining() :
+            if self.enough_time_remaining() and not self.time_passed_better() and not self.iteration_limit():
                 if self.solve(possible, strategy):
                     self._success = True
             self.remove_last_position()
 
-
         return self._success
+
+    def iteration_limit(self):
+        return self.count >= self._limit
+
+    def time_passed_better(self):
+        if self.totalTime != 0:
+            return self._temp_totalTime > self.totalTime
+        else:
+            return False
+
 
     def enough_time_remaining(self):
         clients = self.clients_remaining()
@@ -328,7 +337,6 @@ class Planing(object):
 
     def depots_remaining(self):
         return self.n - len(self._depot_loaded)
-
 
     def remove_last_position(self):
         last_position = self._temp_parcours[-1]
@@ -379,7 +387,6 @@ class Planing(object):
             count = elm.count(0)
             if count <= 1:
                 self._load_possibilities.append(elm)
-
 
     def should_load(self, parcours, position, strategy):
         if self.is_depot(position):
