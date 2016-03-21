@@ -213,6 +213,7 @@ class Planning(object):
         - parcours: le parcours actuel
     """
     def is_all_delivered(self, parcours):
+        #SI tous les clients se trouvent dans parcours, c'est qu'ils ont tous été livrés
         temp = True
         for i in range(self.n):
             if i not in parcours:
@@ -229,7 +230,9 @@ class Planning(object):
     """
     def add_time(self, dest_from, dest_to):
         if dest_from != dest_to:
+            #Récupère le temp entre les 2 lieu
             time_to_add = self.get_time_between(dest_from, dest_to)
+            #et les ajoute au temp total actuel
             self._temp_totalTime += time_to_add
 
     """
@@ -243,9 +246,11 @@ class Planning(object):
     """
     def already_pass(self, parcours, position, num):
         cpt = 0
+        #Compte le nombre de fois que le lieu apparait dans parcours
         for pos in parcours:
             if position == pos:
                 cpt += 1
+        #Retourne vrai si il est passé moins de fois que num, retourne faux sinon
         return cpt >= num
 
     """
@@ -256,6 +261,7 @@ class Planning(object):
         - position: le lieu en question
     """
     def is_client(self, position):
+        #Si le lieu est compris entre 0 et n, c'est un client
         return position in [i for i in range(self.n)]
 
     """
@@ -266,6 +272,7 @@ class Planning(object):
         - position: le lieu en question
     """
     def is_depot(self, position):
+        #Si le lieu est compris entre n et 2n-1, c'est un depot
         return position in [self.n + i for i in range(self.n)]
 
     """
@@ -282,10 +289,14 @@ class Planning(object):
         - dest_to: le lieu d'arrivée
     """
     def can_go(self, parcours, total_time, dest_from, dest_to):
+        #Si il est déja passé 2 fois sur ce lieu
         if self.already_pass(parcours, dest_to, 2):
             return False
+        #SI c'est un client
         if self.is_client(dest_to):
+            #Si à partir de ce lieu, on peut aller chez le client
             if self.can_go_to_client(dest_from, dest_to):
+                #Si le temp n'est pas expiré pour l'atteindre
                 if self.time_expired(total_time, dest_from, dest_to, self.get_time_between(dest_from, dest_to)):
                     return True
                 else:
@@ -307,8 +318,10 @@ class Planning(object):
     def can_go_to_client(self, dest_from, dest_to):
         if(len(self._temp_parcours) == 0):
             return False
+        #Si le client est déja livré, il peut y aller sans soucis
         if self.client_already_delivered(self.get_depot_for(dest_to), self._temp_parcours):
             return True
+        #SI le dernier dépot à avoir été chargé correspond à ce client, il peut y aller
         depot_target = self.get_depot_for(dest_to)
         return self.get_last_loaded() == depot_target
 
@@ -321,9 +334,13 @@ class Planning(object):
     def get_last_loaded(self):
         max = None
         depot = None
+        #Pour chaque dépot chargé
         for key in self._depot_loaded.keys():
+            #On cherche le temp de chargement maximale, qui correspond au dernier chargement éffectué
             if max == None or max < self._depot_loaded[key][1]:
+                #Si le camion n'a pas déja été déchargé
                 if not self._depot_loaded[key][2]:
+                    #C'est que ce dépot est le dernier chargé
                     max = self._depot_loaded[key][1]
                     depot = key
 
@@ -339,10 +356,11 @@ class Planning(object):
     def is_loaded(self, position):
         value = None
         try:
+            #Si le lieu apparait dans les lieux chargé, c'est qu'il a été chargé
             value = self._depot_loaded[position]
         except:
             pass
-        return value != None #Si il est dans la liste, c'est qu'il a été loadé
+        return value != None
 
     """
     copy_array
@@ -369,9 +387,11 @@ class Planning(object):
     def depot_already_delivered(self, depot, parcours):
         value = None
         try:
+            #Récupère le chargement correspondant à ce dépot
             value = self._depot_loaded[depot]
         except:
             pass
+        #et retourne si le chargement a été livré au client ou pas
         if value == None:
             return False
         else:
@@ -385,7 +405,9 @@ class Planning(object):
         - position: le client en question
     """
     def get_time_expected(self, position):
+        #SI c'est un client
         if position in [i for i in range(self.n)]:
+            #On retourne le temp de livraison maximum
             return self.deliveryTime[position]
         else:
             return None
@@ -402,12 +424,16 @@ class Planning(object):
         - time_to_add: le temp a ajouter pour effectuer le trajet entre le lieu et le client
     """
     def time_expired(self, total_time, dest_from, dest_to, time_to_add):
+        #SI c'est un client
         if self.is_client(dest_to):
+            #SI le client n'a pas déja été livré, on rajoute 5 minutes
             if not self.client_already_delivered(self.get_depot_for(dest_to), self._temp_parcours):
                 time_to_add += 5
+            #On récupere le temp de delivery maximale de ce client
             time_expected = self.get_time_expected(dest_to)
             if time_expected == None:
                 return False
+            #Et on vérifie si lorsqu'on ajoute le temp au temp total, si on ne dépasse pas son delivery
             return time_expected >= total_time + time_to_add
         return False
 
@@ -459,22 +485,30 @@ class Planning(object):
     """
     def add_action(self, parcours, dest_from, position, to_load = False):
         action = ""
+        #Si le lieu est un dépot
         if self.is_depot(position):
+            #On récupère le client associé à ce dépot
             client = self.get_client_for(position)
+            #Si on ne doit pas chargé le camion lors de ce passage
             if not to_load:
-                #Si il a déja été chargé
+                #On ajoute le temp séparant ces 2 lieux
                 self.add_time(dest_from, position)
                 hour = self.calculate_hour(self._temp_totalTime)
                 action = "{} : {}, depot du client {}".format(position, hour, client)
             else:
+                #SI on charge le camion
+                #On ajoute le temp séparant ces 2 lieux
                 self.add_time(dest_from, position)
                 hour_before = self.calculate_hour(self._temp_totalTime)
+                #On ajoute le temp de chargement
                 self.add_transfert_time()
                 hour_after = self.calculate_hour(self._temp_totalTime)
                 action = "{} : {}, depot du client {}, chargement fini a {}".format(position, hour_before, client, hour_after)
-
+        #SI c'est un client
         elif self.is_client(position):
+            #On récupere le depot associé
             depot = self.get_depot_for(position)
+            #SI le client a déja été livré
             if self.client_already_delivered(depot, self._temp_parcours):
                 #Si client déja livré, on passe dessus sans déchargement
                 self.add_time(dest_from, position)
@@ -489,7 +523,7 @@ class Planning(object):
                 action = "{} : {}, client {}, dechargement fini a {}".format(position, hour_before, position, hour_after)
                 depot = self.get_depot_for(position)
                 self._depot_loaded[depot][2] = True
-
+        #SInon c'est que c'est un simple carrefour, on ajoute donc simplement le temp entre les 2 lieus
         else:
             self.add_time(dest_from, position)
             hour = self.calculate_hour(self._temp_totalTime)
@@ -521,6 +555,7 @@ class Planning(object):
             self._temp_parcours.append(position)
             self.add_action(self._temp_parcours, position, position)
 
+            #Pour chaques stratégie, on itère
             for strategy in self._load_possibilities:
                     if self.solve(position, strategy):
                         self._success = True
@@ -530,25 +565,35 @@ class Planning(object):
             self.compare_results(self._temp_totalTime, self._temp_parcours)
             return True
 
-        #On détermine les chemins possible
+        #On détermine les chemins possible à partir du lieu en vérifiant si il peut y aller
+        # (dans le cas d'un client dont la marchandise n'a pas été chargé, il ne sera pas
+        # repris dans cette liste des lieux possible à atteindre)
         possibles = []
         for i in range(self.m):
             time = self.get_time_between(position, i)
             if(time != None and self.can_go(self._temp_parcours, self._temp_totalTime, position, i)):
                 possibles.append(i)
 
-        #Tous les chemins possible sont déterminé, on les teste)
+        #On parcourt tous les chemin possible à partir de ce lieu
         for possible in possibles:
             self._temp_parcours.append(possible)
+            #Regarde si le camion doit être chargé si c'est un dépot selon la stratégie actuelle
             should_load = self.should_load(self._temp_parcours, possible, strategy)
             time = self._temp_totalTime
             self.add_action(self._temp_parcours, position, possible, should_load)
             if should_load:
-                #On ajoute le numero du dépot et son totalTime associé avant chargement et avant meme d'avoir été dessus
+                #On ajoute le numero du dépot et son totalTime associé avant chargement et
+                #le temp juste avant le chargement
                 self._depot_loaded[possible] = [time, self._temp_totalTime, False]
+            #On vérifie si il nous reste assez de temps pour atteindre les clients et dépots restant
+            #On vérifie si on a pas dépassé le meilleur temp
+            #On vérifie si on a pas dépassé la limité d'itération
+            #Et on ré-itère
             if self.enough_time_remaining() and not self.time_passed_better() and not self.iteration_limit():
                 if self.solve(possible, strategy):
                     self._success = True
+            #On arrive ici lorsqu'il est arrivé au bout de l'itération, et retire le dernier élement pour
+            #reprendre la suite à partir de là
             self.remove_last_position()
 
         return self._success
@@ -596,6 +641,8 @@ class Planning(object):
 
         flag = False
         cpt = 0
+        #POur chaque deliveryTime, on regarde si on a assez de temp restant pour l'atteindre
+        #SI il y en au moins un, c'est bon, sinon, on arrête cette itération inutile
         for delivery in self.deliveryTime:
             if not self.client_already_delivered((cpt + self.n), self._temp_parcours):
                 if delivery >= self._temp_totalTime + time:
@@ -612,7 +659,10 @@ class Planning(object):
     """
     def clients_remaining(self):
         cpt = 0
+        #Le nombre de dépot visité
         cpt += self.n - len(self._depot_loaded)
+        #SI tous les dépots ne sont pas visité, on compte également si les dépots qu'on
+        #a effectivement visité ont été chargé ou pas, vu qu'on doit repasser dessus.
         if cpt != self.n:
             for key in self._depot_loaded.keys():
                 if self._depot_loaded[key][2] == False:
@@ -640,29 +690,42 @@ class Planning(object):
     paramètre:
     """
     def remove_last_position(self):
+        #On récupere les 2 dernier lieu visité dans le parcours actuel
         last_position = self._temp_parcours[-1]
         dest_from = self._temp_parcours[-2]
+        #On récupere le temps entre ces 2 lieux
         time = self.get_time_between(dest_from, last_position)
+        #Si c'est un lieu
         if self.is_depot(last_position):
             try:
+                #On récupere son heure de chargement
                 time_loaded = self._depot_loaded[last_position]
+                #SI le temp total actuel correspond à l'heure de chargement, ça veut dire qu'on est
+                #au moment où le camion est chargé, et donc si on retire cette position de parcours
+                #il faut également retirer 5 minutes au temp total correspondant au temp de chargement
                 if self._temp_totalTime == time_loaded[1]:
                     self.remove_time(time + 5)
                     del self._depot_loaded[last_position]
                 else:
+                    #Si il chargeait pas à ce moment là, on retire juste le temp entre les 2 lieux
                     self.remove_time(time)
             except:
                 self.remove_time(time)
+        #Si c'est un client
         elif self.is_client(last_position):
             depot = self.get_depot_for(last_position)
             try:
+                #On regarde si il a été livré
                 delivered = self._depot_loaded[depot][2]
+                #SI il a été livré, on regarde si c'est a ce moment-ci qu'il l'a été
                 if delivered:
                     cpt = 0
                     for elm in self._temp_parcours:
                         if elm == last_position:
                             cpt += 1
                     if cpt == 1:
+                        #Si il apparait qu'une fois dans le tableau, c'est que c'est le moment où il a été
+                        #déchargé, car on ne peut repassé sur un client que si il a été livré.
                         self.remove_time(time + 5)
                         depot = self.get_depot_for(last_position)
                         self._depot_loaded[depot][2] = False
