@@ -6,8 +6,8 @@ class Node(object):
         self._name = name
         self._gares = {}
 
-    def add_gare(self, name, distance):
-        gare = Gare(name, distance)
+    def add_gare(self, name, distance, root):
+        gare = Gare(distance, root)
         self._gares[name] = gare
 
     def afficher(self):
@@ -19,6 +19,9 @@ class Node(object):
     def gareAccessibles(self):
         temp = []
         for key in self._gares.keys():
-            temp.append(self._gares[key]._name)
+            temp.append(self._gares[key].get_name())
 
         return temp
+
+    def trouverParcours(self, destinations):
+        pass
