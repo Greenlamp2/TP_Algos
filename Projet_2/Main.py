@@ -9,6 +9,6 @@ def trouverParcoursMin(reseau, villeA, villeB):
 if __name__ == "__main__":
     reseau = ReseauFerroviaire()
     reseau.init_data("data.txt")
-    print(reseau.garesAccessibles("Paris"))
-    #parcours = trouverParcoursMin(reseau, "Bruxelles", "Rome")
-    #print(parcours)
+    print(reseau.garesAccessibles("Messina"))
+
+    print(reseau.trouverParcours("Messina", ["Catania", "Palermo", "Rome"]))

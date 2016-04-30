@@ -1,38 +1,11 @@
 # coding: utf8
-from Node import Node
+from Gare import Gare
+
 
 class ReseauFerroviaire(object):
     def __init__(self):
-        self._tree = []
-        self._temp = []
-
-    def add_node(self, name, data, nb):
-        if name == "Messina":
-            pass
-        node = self.get_or_create_node(name)
-        if nb != 0:
-            for i in range(0, int(nb)):
-                ville = data[i]
-                sub_tree = self.get_or_create_node(ville)
-                distance = data[i+nb]
-                node.add_gare(ville, distance, sub_tree)
-
-        self._tree.append(node)
-
-    def get_or_create_node(self, name):
-        node = self.get_node(name)
-        if(node == None):
-            node = self.create_node(name)
-        return node
-
-    def create_node(self, name):
-        node = Node(name)
-        self._tree.append(node)
-        return node
-
-    def afficher(self):
-        for node in self._tree:
-            node.afficher()
+        self._gares = []
+        self._temp = None
 
     def init_data(self, name_file):
         with open(name_file, 'r') as f:
@@ -61,6 +34,33 @@ class ReseauFerroviaire(object):
 
         self.add_node(name, temp, int(nbItems))
 
+    def add_node(self, name, data, nb_ville):
+        node = self.get_or_create_node(name)
+        if nb_ville != 0:
+            for i in range(0, int(nb_ville)):
+                ville = data[i]
+                sub_tree = self.get_or_create_node(ville)
+                distance = data[i+nb_ville]
+                sub_tree._distance = distance
+                node.add_gare_available(sub_tree)
+
+        self._gares.append(node)
+
+    def get_or_create_node(self, name):
+        node = self.get_node(name)
+        if node == None:
+            node = Gare(name)
+
+        return node
+
+    def get_node(self, name):
+        node = None
+        for gare in self._gares:
+            if gare._name == name:
+                node =  gare
+
+        return node
+
     def garesAccessibles(self, villeA):
         self._temp = []
         self.rec_garesAccessibles(villeA)
@@ -75,15 +75,26 @@ class ReseauFerroviaire(object):
         for item in temp:
             self.rec_garesAccessibles(item)
 
-
-    def get_node(self, ville):
-        for node in self._tree:
-            if node._name == ville:
-                return node
-
     def trouverParcours(self, villeA, destinations):
-        node = self.get_node(villeA)
-        return node.trouverParcours(destinations)
+        possible = self.garesAccessibles(villeA)
+        ok = True
+        for destination in destinations:
+            if destination not in possible:
+                poss = self.garesAccessibles(destination)
+                if villeA not in poss:
+                    ok = False
 
-    def trouverDistance(self, destinations):
+        return ok
+
+    def get_parcours(self, villeA, villeB):
+        return []
+
+    def trouverDistance(self, villeA, destinations):
         pass
+
+    def __str__(self):
+        msg = ""
+        for gare in self._gares:
+            msg += str(gare)
+            msg += "\n"
+        return msg
