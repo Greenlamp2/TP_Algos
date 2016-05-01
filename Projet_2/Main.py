@@ -34,6 +34,21 @@ def remove_after(parcour, ville):
     else:
         return parcour
 
+def remove_before(parcour, ville):
+    # index = 0
+    # cpt = 0
+    # for elm in parcour:
+    #     if elm == ville:
+    #         index = cpt
+    #     cpt += 1
+
+    index = parcour.index(ville)
+    if index != 0:
+        temp = list(reversed(parcour))[:-index]
+        return list(reversed(temp))
+    else:
+        return parcour
+
 def trouverParcoursMin(reseaux, villeA, villeB):
     chemins = []
     for reseau in reseaux:
@@ -43,6 +58,7 @@ def trouverParcoursMin(reseaux, villeA, villeB):
                 parcour = reseau.get_parcours(villeA, villeB)
                 if(parcour != []):
                     distance = reseau.compute_distance(parcour)
+                    distance -= reseau.compute_distance_int(villeA)
                     chemin = {
                         "parcour": parcour,
                         "distance": distance
@@ -57,13 +73,26 @@ def trouverParcoursMin(reseaux, villeA, villeB):
                             if(middle != None):
                                 a = reseau.trouverParcours([middle])[-1]
                                 b = reseau2.trouverParcours([middle])[-1]
+                                c = None
+                                distance = 0
+                                if(villeA not in a):
+                                    c = reseau.trouverParcours([villeA])[-1]
+                                if c!= None:
+                                    distance += reseau.compute_distance(c)
+                                    c = list(reversed(c))
+                                    del c[-1]
+                                else:
+                                    a = remove_before(a, villeA)
                                 b = remove_after(b, villeB)
-                                del b[-1]
-                                distance = reseau.compute_distance(a)
+                                distance += reseau.compute_distance(a)
                                 distance += reseau2.compute_distance(b)
                                 distance -= reseau2.compute_distance_int(b[0])
+                                del b[-1]
                                 b = list(reversed(b))
                                 a.extend(b)
+                                if c != None:
+                                    c.extend(a)
+                                    a = c
                                 chemin = {
                                     "parcour": a,
                                     "distance": distance
@@ -103,5 +132,8 @@ if __name__ == "__main__":
     output(trouverParcoursMin(reseaux, "Bruxelles", "Bologne"))
     output(trouverParcoursMin(reseaux, "Bruxelles", "Florence"))
     output(trouverParcoursMin(reseaux, "Bruxelles", "Rome"))
+    output(trouverParcoursMin(reseaux, "Lille", "Milan"))
+    output(trouverParcoursMin(reseaux, "Namur", "Rome"))
+    output(trouverParcoursMin(reseaux, "Mons", "Rome"))
     pass
 
