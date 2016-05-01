@@ -1,0 +1,13 @@
+Rome;2;Florence;Naples;278;225
+Florence;2;Pisa;Bologne;82;104
+Pisa;0
+Bologne;2;Venice;Milan;145;222
+Venice;1;Vicenza;75
+Vicenza;0
+Milan;0
+Naples;2;Bari;Messina;257;493
+Bari;0
+Messina;3;Catania;Palermo;Trapani;98;224;333
+Catania;0
+Palermo;0
+Trapani;0
