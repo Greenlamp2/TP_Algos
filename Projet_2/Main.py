@@ -10,19 +10,24 @@ def match(parcour1, parcour2):
     return None
 
 def min_distance(chemins):
-    if(chemins == []):
-        return []
-    else:
-        return chemins[0]
+    to_return = chemins[0]
+    max = chemins[0]["distance"]
+    for chemin in chemins:
+        if chemin["distance"] < max:
+            to_return = chemin
+            max = chemin["distance"]
+
+    return to_return
 
 def remove_after(parcour, ville):
-    index = 0
-    cpt = 0
-    for elm in parcour:
-        if elm == ville:
-            index = cpt
-        cpt += 1
+    # index = 0
+    # cpt = 0
+    # for elm in parcour:
+    #     if elm == ville:
+    #         index = cpt
+    #     cpt += 1
 
+    index = parcour.index(ville)
     if index != 0:
         temp = list(reversed(parcour))[:-index]
         return list(reversed(temp))
@@ -53,15 +58,33 @@ def trouverParcoursMin(reseaux, villeA, villeB):
                                 a = reseau.trouverParcours([middle])[-1]
                                 b = reseau2.trouverParcours([middle])[-1]
                                 b = remove_after(b, villeB)
+                                del b[-1]
                                 distance = reseau.compute_distance(a)
                                 distance += reseau2.compute_distance(b)
                                 distance -= reseau2.compute_distance_int(b[0])
+                                b = list(reversed(b))
+                                a.extend(b)
                                 chemin = {
-                                    "parcour": [a, list(reversed(b))],
+                                    "parcour": a,
                                     "distance": distance
                                 }
                                 chemins.append(chemin)
     return min_distance(chemins)
+
+
+def output(reponse):
+    if reponse == None:
+        print("Aucuns parcours possible")
+    else:
+        villeA = reponse["parcour"][0]
+        villeB = reponse["parcour"][-1]
+        print("Meilleur Parcours possible entre " + villeA + " et " + villeB + " :")
+        for elm in enumerate(reponse["parcour"]):
+            if(elm[0] != len(reponse["parcour"])-1):
+                print(elm[1], end=", ")
+            else:
+                print(elm[1])
+        print("Distance: " + str(reponse["distance"]))
 
 
 if __name__ == "__main__":
@@ -76,9 +99,9 @@ if __name__ == "__main__":
     reseaux.append(reseau_rome)
 
 
-    print(trouverParcoursMin(reseaux, "Bruxelles", "Milan"))
-    print(trouverParcoursMin(reseaux, "Bruxelles", "Bologne"))
-    print(trouverParcoursMin(reseaux, "Bruxelles", "Florence"))
-    print(trouverParcoursMin(reseaux, "Bruxelles", "Rome"))
+    output(trouverParcoursMin(reseaux, "Bruxelles", "Milan"))
+    output(trouverParcoursMin(reseaux, "Bruxelles", "Bologne"))
+    output(trouverParcoursMin(reseaux, "Bruxelles", "Florence"))
+    output(trouverParcoursMin(reseaux, "Bruxelles", "Rome"))
     pass
 
