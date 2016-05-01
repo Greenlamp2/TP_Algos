@@ -2,7 +2,7 @@
 
 
 class Gare(object):
-    def __init__(self, name, distance=None):
+    def __init__(self, name, distance=0):
         self._name = name
         self._distance = distance
         self._gares_available = []

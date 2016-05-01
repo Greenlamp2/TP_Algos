@@ -1,0 +1,12 @@
+Bruxelles;2;Liege;Lille;96;120
+Liege;2;Spa;Namur;39;65
+Spa;0
+Namur;2;Charleroi;Arlon;50;128
+Charleroi;1;Mons;50
+Mons;0
+Arlon;0
+Lille;2;London;Paris;292;223
+Paris;3;Orleans;Lyon;Borges;129;465;245
+Lyon;2;Geneve;Milan;150;442
+Geneve;0
+Milan;0

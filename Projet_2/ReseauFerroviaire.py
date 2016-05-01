@@ -44,12 +44,11 @@ class ReseauFerroviaire(object):
                 sub_tree._distance = distance
                 node.add_gare_available(sub_tree)
 
-        self._gares.append(node)
-
     def get_or_create_node(self, name):
         node = self.get_node(name)
         if node == None:
             node = Gare(name)
+            self._gares.append(node)
 
         return node
 
@@ -57,25 +56,25 @@ class ReseauFerroviaire(object):
         node = None
         for gare in self._gares:
             if gare._name == name:
-                node =  gare
+                node = gare
 
         return node
 
-    def garesAccessibles(self, villeA):
+    def garesAccessibles(self):
         self._temp = []
-        self.rec_garesAccessibles(villeA)
+        self.rec_garesAccessibles(self.get_root()._name)
         return self._temp
 
     def rec_garesAccessibles(self, villeA):
-        self._temp.append(villeA)
         node = self.get_node(villeA)
-        if(node == None):
-            return
-        temp = node.gareAccessibles()
-        for item in temp:
-            self.rec_garesAccessibles(item)
+        if(node != None):
+            self._temp.append(node._name)
+            if(node != None):
+                temp = node.gareAccessibles()
+                for item in temp:
+                    self.rec_garesAccessibles(item)
 
-    def trouverParcours(self, villeA, destinations):
+    def existsParcours(self, villeA, destinations):
         possible = self.garesAccessibles(villeA)
         ok = True
         for destination in destinations:
@@ -86,11 +85,66 @@ class ReseauFerroviaire(object):
 
         return ok
 
-    def get_parcours(self, villeA, villeB):
-        return []
+    def trouverParcours(self, destinations):
+        parcours = []
+        for destination in destinations:
+            node_destination = self.get_node(destination)
+            if(node_destination != None):
+                parcour = self.get_parcours(self.get_root()._name, destination)
+                if(len(parcour) > 0):
+                    parcours.append(parcour)
 
-    def trouverDistance(self, villeA, destinations):
-        pass
+        return parcours
+
+
+    def get_parcours(self, villeA, villeB):
+        self._temp = []
+        node_villeB = self.get_node(villeB)
+        node_villeA = self.get_node(villeA)
+        if(node_villeB != None and node_villeA != None):
+            self._temp = [node_villeB._name]
+            self.rec_get_parcours(node_villeA, node_villeB)
+            if(len(self._temp) == 1):
+                self._temp = []
+            else:
+                self._temp = list(reversed(self._temp))
+        else:
+            self._temp = []
+        return self._temp
+
+    def rec_get_parcours(self, villeA, villeB):
+        found = False
+        for item in villeA._gares_available:
+            if item._name == villeB._name:
+                found = True
+            if not found:
+                found = self.rec_get_parcours(item, villeB)
+        if found:
+            self._temp.append(villeA._name)
+        return found
+
+    def trouverDistance(self, destinations):
+        parcours = self.trouverParcours(destinations)
+        distances = []
+        for parcour in parcours:
+            sum = 0
+            for ville in parcour:
+                node = self.get_node(ville)
+                sum += int(node._distance)
+            distances.append(sum)
+        return distances
+
+    def get_root(self):
+        return self._gares[0]
+
+    def compute_distance(self, parcour):
+        distance = 0
+        for ville in parcour:
+            node = self.get_node(ville)
+            if(node != None):
+                distance += int(node._distance)
+
+        return distance
 
     def __str__(self):
         msg = ""
