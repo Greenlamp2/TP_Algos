@@ -577,5 +577,3 @@ if __name__ == "__main__":
     output(trouverParcoursMin(reseaux, "Lille", "Milan"))
     output(trouverParcoursMin(reseaux, "Namur", "Rome"))
     output(trouverParcoursMin(reseaux, "Mons", "Rome"))
-    pass
-
