@@ -146,6 +146,13 @@ class ReseauFerroviaire(object):
 
         return distance
 
+    def compute_distance_int(self, ville):
+        if ville == self.get_root()._name:
+            return 0
+        else:
+            distance = self.trouverDistance([ville])
+            return distance[-1]
+
     def __str__(self):
         msg = ""
         for gare in self._gares:
